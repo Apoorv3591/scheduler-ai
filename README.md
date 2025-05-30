@@ -4,6 +4,18 @@ This AI agent reads your Gmail, extracts event details using GPT-4, and schedule
 
 ## Setup
 1. Add Google OAuth `credentials.json` to `credentials/`
+```
+Go to Google Cloud Console
+
+Create a new project → Enable:
+Gmail API
+Google Calendar API
+
+Go to APIs & Services > Credentials → Create OAuth 2.0 Client ID
+
+Download the credentials.json file and place it in the credentials/ folder.
+```
+
 2. Install requirements:
 ```bash
 python3 -m venv venv
