@@ -1,0 +1,4 @@
+token.json
+.env
+__pycache__/
+credentials/credentials.json
