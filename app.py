@@ -23,7 +23,7 @@ CORS(app)
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 # -------------------- FIREBASE INIT --------------------
-firebase_admin.initialize_app(fb_credentials.Certificate("firebase_service_key.json"))
+firebase_admin.initialize_app(fb_credentials.Certificate("/etc/secrets/firebase_service_key.json"))
 db = firestore.client()
 
 # -------------------- CONSTANTS --------------------
