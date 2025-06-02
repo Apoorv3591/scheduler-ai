@@ -147,10 +147,12 @@ def toggle_agent():
 
     if enable:
         if uid not in background_agents:
+            print(f"🧵 Spawning thread for UID: {uid}")
             stop_event = threading.Event()
             thread = threading.Thread(target=run_agent_for_user, args=(uid, stop_event), daemon=True)
             background_agents[uid] = thread
             agent_flags[uid] = stop_event
+            print(f"🧵 Spawning thread for UID: {uid}")
             thread.start()
             print(f"✅ Started agent for UID: {uid}")
     else:
@@ -238,6 +240,7 @@ def upcoming_events(uid):
         events = events_result.get('items', [])
         return jsonify(events)
     except Exception as e:
+        print("🔴 Upcoming events error:", e)
         return jsonify({"error": str(e)}), 500
 
 @app.route('/api/store-creds', methods=['POST'])

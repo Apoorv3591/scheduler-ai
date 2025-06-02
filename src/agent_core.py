@@ -187,9 +187,13 @@ def user_agent_loop(uid, gmail, calendar):
     print(f"👋 Agent thread stopped for user {uid}")
 
 def run_agent_for_user(uid, stop_event):
-    gmail, calendar = auth_services(uid)
-    seen_ids = load_seen_ids(uid)
-    print(f"🤖 Background agent thread started for {uid}")
+    try:
+        gmail, calendar = auth_services(uid)
+        seen_ids = load_seen_ids(uid)
+        print(f"🤖 Background agent thread started for {uid}")
+    except Exception as e:
+        print(f"❌ Agent failed to start for {uid}: {e}")
+        return  # Exit the thread
 
     while not stop_event.is_set():
         try:
