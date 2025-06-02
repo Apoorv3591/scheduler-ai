@@ -1,13 +1,18 @@
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
-
+from datetime import datetime
 load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+MAX_EMAIL_LENGTH = 3000  # You can tune this lower if you still hit limits
+today = datetime.utcnow().strftime("%Y-%m-%d")
 def parse_event(email_text):
-    prompt = f"""You are a meeting assistant that extracts calendar events from email messages.
-
+    truncated_email = email_text.strip()[:MAX_EMAIL_LENGTH]
+    today = datetime.utcnow().strftime("%Y-%m-%d")
+    prompt = f""" Today's date is {today}.
+    You are a meeting assistant that extracts calendar events from email messages.
+    Ensure that suggested times are in the future only.
 Return a strict JSON object using this format:
 {{
   "title": "Team Sync",
@@ -25,7 +30,7 @@ Rules:
 
 Email:
 \"\"\"
-{email_text}
+{truncated_email}
 \"\"\"
 """
 

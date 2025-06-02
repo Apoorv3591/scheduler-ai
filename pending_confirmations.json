@@ -1,1 +1,32 @@
-{}
+{
+  "apsjag@gmail.com": {
+    "options": [
+      {
+        "date": "2025-05-31",
+        "start": "14:00",
+        "end": "15:00"
+      },
+      {
+        "date": "2025-06-02",
+        "start": "10:00",
+        "end": "11:00"
+      }
+    ],
+    "message_id": null
+  },
+  "psapsjag@gmail.com": {
+    "options": [
+      {
+        "date": "2025-06-01",
+        "start": "10:00",
+        "end": "11:00"
+      },
+      {
+        "date": "2025-06-02",
+        "start": "14:00",
+        "end": "15:00"
+      }
+    ],
+    "message_id": null
+  }
+}

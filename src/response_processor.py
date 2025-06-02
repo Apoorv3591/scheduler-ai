@@ -1,18 +1,21 @@
+import os
 import re
 import json
+from openai import OpenAI
 from confirmation_tracker import (
     get_pending_confirmation,
     remove_pending_confirmation
 )
 from calendar_scheduler import schedule_event
 from email_reader import extract_body
-from openai import OpenAI
-import os
+from activity_logger import log_user_activity
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def parse_confirmation_reply(reply_text, options):
-    # Ask GPT to convert natural language into a selected option
+    """
+    Ask GPT to convert the user's free-text reply into one of the suggested options.
+    """
     prompt = f"""
 You are an assistant that interprets user replies to meeting suggestions.
 
@@ -39,7 +42,10 @@ If no option matches, return: null
     except:
         return None
 
-def process_replies(gmail_service, calendar_service):
+def process_replies(gmail_service, calendar_service, uid):
+    """
+    Check unread emails for replies to suggested meeting options and schedule confirmed slots.
+    """
     print("📥 Checking replies to suggested meeting options...")
     results = gmail_service.users().messages().list(userId='me', labelIds=['INBOX'], q="is:unread", maxResults=5).execute()
     messages = results.get('messages', [])
@@ -60,6 +66,8 @@ def process_replies(gmail_service, calendar_service):
                 reply_text = extract_body(payload)
                 print(f"📨 Reply from {sender_email}:\n{reply_text[:300]}...\n")
 
+                log_user_activity(uid, "ReplyReceived", f"Received reply from {sender_email}")
+
                 selected = parse_confirmation_reply(reply_text, pending['options'])
 
                 if selected:
@@ -72,9 +80,16 @@ def process_replies(gmail_service, calendar_service):
 
                     schedule_event(calendar_service, event_info, sender_email=sender_email, gmail_service=gmail_service)
                     remove_pending_confirmation(sender_email)
+
+                    log_user_activity(uid, "EventScheduled", f"Confirmed slot for {sender_email} on {selected['date']} at {selected['start']}")
                     print(f"✅ Scheduled confirmed slot for {sender_email}.")
                 else:
+                    log_user_activity(uid, "ReplyUnmatched", f"Could not interpret reply from {sender_email}")
                     print("⚠️ Could not match a valid option from reply.")
 
         # Mark the email as read after processing
-        gmail_service.users().messages().modify(userId='me', id=msg['id'], body={'removeLabelIds': ['UNREAD']}).execute()
+        gmail_service.users().messages().modify(
+            userId='me',
+            id=msg['id'],
+            body={'removeLabelIds': ['UNREAD']}
+        ).execute()
