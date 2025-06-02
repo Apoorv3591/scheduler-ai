@@ -259,18 +259,32 @@ def upcoming_events(uid):
 
 @app.route('/api/store-creds', methods=['POST'])
 def store_creds():
-    data = request.json
-    uid = data.get('uid')
-    token = data.get('access_token')
-    if not uid or not token:
-        return jsonify({"error": "Missing uid or token"}), 400
+    data = request.get_json()
+    uid = data['uid']
+    access_token = data['access_token']
+    
+    # ✅ Add from env if not present
+    client_id = os.environ.get("GOOGLE_CLIENT_ID")
+    client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
 
     db = get_firestore()
-    db.collection("users").document(uid).set(
-        {"google_creds": {"access_token": token}},
-        merge=True
-    )
-    return jsonify({"message": "Stored successfully"}), 200
+    doc_ref = db.collection("users").document(uid)
+    doc_ref.set({
+        "google_creds": {
+            "access_token": access_token,
+            "client_id": client_id,
+            "client_secret": client_secret,
+            "token_uri": "https://oauth2.googleapis.com/token",
+            "scopes": [
+                "https://www.googleapis.com/auth/gmail.modify",
+                "https://www.googleapis.com/auth/calendar",
+                "https://www.googleapis.com/auth/gmail.send",
+                "https://www.googleapis.com/auth/gmail.readonly"
+            ]
+        }
+    }, merge=True)
+
+    return jsonify({"message": "Stored successfully"})
 
 # -------------------- MAIN --------------------
 if __name__ == "__main__":
