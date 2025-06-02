@@ -2,3 +2,6 @@ token.json
 .env
 __pycache__/
 credentials/credentials.json
+firebase_service_key.json
+tokens/
+seen_ids/
