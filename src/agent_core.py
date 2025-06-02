@@ -2,7 +2,7 @@ import os
 import json
 import time
 import re
-from google.oauth2.credentials import Credentials
+from google.oauth2.credentials import Credentials as GoogleCredentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from email_reader import extract_body
