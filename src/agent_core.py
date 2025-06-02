@@ -27,26 +27,50 @@ def get_firestore():
     return firestore.client()
 
 
-def auth_services(uid=None):
-    creds = None
-    creds_path = '/etc/secrets/credentials.json'
+# def auth_services(uid=None):
+#     creds = None
+#     creds_path = '/etc/secrets/credentials.json'
 
-    if uid:
-        token_path = f'tokens/{uid}.json'
-        if os.path.exists(token_path):
-            creds = Credentials.from_authorized_user_file(token_path, SCOPES)
-        else:
-            os.makedirs('tokens', exist_ok=True)
-            flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
-            creds = flow.run_local_server(port=0)
-            with open(token_path, 'w') as token:
-                token.write(creds.to_json())
-    else:
-        # Admin credentials
-        creds = Credentials.from_authorized_user_file('token.json', SCOPES)
+#     if uid:
+#         token_path = f'tokens/{uid}.json'
+#         if os.path.exists(token_path):
+#             creds = Credentials.from_authorized_user_file(token_path, SCOPES)
+#         else:
+#             os.makedirs('tokens', exist_ok=True)
+#             flow = InstalledAppFlow.from_client_secrets_file(creds_path, SCOPES)
+#             creds = flow.run_local_server(port=0)
+#             with open(token_path, 'w') as token:
+#                 token.write(creds.to_json())
+#     else:
+#         # Admin credentials
+#         creds = Credentials.from_authorized_user_file('token.json', SCOPES)
 
-    gmail_service = build('gmail', 'v1', credentials=creds)
-    calendar_service = build('calendar', 'v3', credentials=creds)
+#     gmail_service = build('gmail', 'v1', credentials=creds)
+#     calendar_service = build('calendar', 'v3', credentials=creds)
+#     return gmail_service, calendar_service
+
+def auth_services(uid):
+    db = get_firestore()
+    doc = db.collection("users").document(uid).get()
+    if not doc.exists:
+        raise Exception(f"No credentials for uid={uid}")
+    
+    user_data = doc.to_dict().get("google_creds", {})
+    token = user_data.get("access_token")
+
+    if not token:
+        raise Exception(f"Missing access token for uid={uid}")
+
+    creds = Credentials(
+        token=token,
+        client_id=os.environ["GOOGLE_CLIENT_ID"],
+        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
+        token_uri='https://oauth2.googleapis.com/token',
+        scopes=SCOPES
+    )
+
+    gmail_service = build("gmail", "v1", credentials=creds)
+    calendar_service = build("calendar", "v3", credentials=creds)
     return gmail_service, calendar_service
 
 def extract_sender_email(headers):

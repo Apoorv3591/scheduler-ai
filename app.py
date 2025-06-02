@@ -240,6 +240,20 @@ def upcoming_events(uid):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route('/api/store-creds', methods=['POST'])
+def store_creds():
+    data = request.json
+    uid = data.get('uid')
+    token = data.get('access_token')
+    if not uid or not token:
+        return jsonify({"error": "Missing uid or token"}), 400
+
+    db = get_firestore()
+    db.collection("users").document(uid).set(
+        {"google_creds": {"access_token": token}},
+        merge=True
+    )
+    return jsonify({"message": "Stored successfully"}), 200
 
 # -------------------- MAIN --------------------
 if __name__ == "__main__":
