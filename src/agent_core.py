@@ -49,29 +49,45 @@ def get_firestore():
 #     calendar_service = build('calendar', 'v3', credentials=creds)
 #     return gmail_service, calendar_service
 
-def auth_services(uid):
-    db = get_firestore()
-    doc = db.collection("users").document(uid).get()
+def get_user_services(uid):
+    doc_ref = db.collection("users").document(uid)
+    doc = doc_ref.get()
     if not doc.exists:
-        raise Exception(f"No credentials for uid={uid}")
-    
-    user_data = doc.to_dict().get("google_creds", {})
-    token = user_data.get("access_token")
+        raise Exception(f"No stored credentials for uid={uid}")
 
+    creds_data = doc.to_dict().get("google_creds", {})
+    
+    # ✅ Support both new (access_token) and legacy (token) field
+    token = creds_data.get("access_token") or creds_data.get("token")
     if not token:
         raise Exception(f"Missing access token for uid={uid}")
 
-    creds = Credentials(
+    refresh_token = creds_data.get("refresh_token")
+    client_id = creds_data.get("client_id") or os.environ.get("GOOGLE_CLIENT_ID")
+    client_secret = creds_data.get("client_secret") or os.environ.get("GOOGLE_CLIENT_SECRET")
+    token_uri = creds_data.get("token_uri", "https://oauth2.googleapis.com/token")
+    scopes = creds_data.get("scopes") or [
+        "https://www.googleapis.com/auth/gmail.modify",
+        "https://www.googleapis.com/auth/calendar",
+        "https://www.googleapis.com/auth/gmail.send",
+        "https://www.googleapis.com/auth/gmail.readonly"
+    ]
+
+    creds = GoogleCredentials(
         token=token,
-        client_id=os.environ["GOOGLE_CLIENT_ID"],
-        client_secret=os.environ["GOOGLE_CLIENT_SECRET"],
-        token_uri='https://oauth2.googleapis.com/token',
-        scopes=SCOPES
+        refresh_token=refresh_token,
+        token_uri=token_uri,
+        client_id=client_id,
+        client_secret=client_secret,
+        scopes=scopes
     )
 
-    gmail_service = build("gmail", "v1", credentials=creds)
-    calendar_service = build("calendar", "v3", credentials=creds)
-    return gmail_service, calendar_service
+    if creds.expired and creds.refresh_token:
+        creds.refresh(google.auth.transport.requests.Request())
+
+    gmail = build("gmail", "v1", credentials=creds)
+    calendar = build("calendar", "v3", credentials=creds)
+    return gmail, calendar
 
 def extract_sender_email(headers):
     sender = next((h['value'] for h in headers if h['name'].lower() == 'from'), None)

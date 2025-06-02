@@ -83,48 +83,48 @@ def get_user_services(uid):
 def home():
     return {"status": "AI Scheduler running"}, 200
 
-@app.route("/start-oauth")
-def start_oauth():
-    uid = request.args.get("uid")
-    if not uid:
-        return jsonify({"error": "Unauthorized"}), 401
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRET_FILE,
-        scopes=SCOPES,
-        redirect_uri=url_for("oauth_callback", _external=True)
-    )
-    auth_url, state = flow.authorization_url(
-        access_type="offline",
-        include_granted_scopes="true",
-        prompt="consent"
-    )
-    session["uid"] = uid
-    session["state"] = state
-    return redirect(auth_url)
+# @app.route("/start-oauth")
+# def start_oauth():
+#     uid = request.args.get("uid")
+#     if not uid:
+#         return jsonify({"error": "Unauthorized"}), 401
+#     flow = Flow.from_client_secrets_file(
+#         CLIENT_SECRET_FILE,
+#         scopes=SCOPES,
+#         redirect_uri=url_for("oauth_callback", _external=True)
+#     )
+#     auth_url, state = flow.authorization_url(
+#         access_type="offline",
+#         include_granted_scopes="true",
+#         prompt="consent"
+#     )
+#     session["uid"] = uid
+#     session["state"] = state
+#     return redirect(auth_url)
 
-@app.route("/oauth/callback")
-def oauth_callback():
-    if "uid" not in session or "state" not in session:
-        return "Missing session", 400
-    flow = Flow.from_client_secrets_file(
-        CLIENT_SECRET_FILE,
-        scopes=SCOPES,
-        redirect_uri=url_for("oauth_callback", _external=True)
-    )
-    flow.fetch_token(authorization_response=request.url)
-    credentials = flow.credentials
-    token_data = {
-        "token": credentials.token,
-        "refresh_token": credentials.refresh_token,
-        "token_uri": credentials.token_uri,
-        "client_id": credentials.client_id,
-        "client_secret": credentials.client_secret,
-        "scopes": credentials.scopes,
-        "expiry": str(credentials.expiry)
-    }
-    uid = session["uid"]
-    db.collection("users").document(uid).set({"google_creds": token_data}, merge=True)
-    return redirect("http://localhost:3000/dashboard?auth_success=true")
+# @app.route("/oauth/callback")
+# def oauth_callback():
+#     if "uid" not in session or "state" not in session:
+#         return "Missing session", 400
+#     flow = Flow.from_client_secrets_file(
+#         CLIENT_SECRET_FILE,
+#         scopes=SCOPES,
+#         redirect_uri=url_for("oauth_callback", _external=True)
+#     )
+#     flow.fetch_token(authorization_response=request.url)
+#     credentials = flow.credentials
+#     token_data = {
+#         "token": credentials.token,
+#         "refresh_token": credentials.refresh_token,
+#         "token_uri": credentials.token_uri,
+#         "client_id": credentials.client_id,
+#         "client_secret": credentials.client_secret,
+#         "scopes": credentials.scopes,
+#         "expiry": str(credentials.expiry)
+#     }
+#     uid = session["uid"]
+#     db.collection("users").document(uid).set({"google_creds": token_data}, merge=True)
+#     return redirect("http://localhost:3000/dashboard?auth_success=true")
 
 @app.route("/agent-status")
 @require_login
