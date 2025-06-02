@@ -49,7 +49,7 @@ def get_firestore():
 #     calendar_service = build('calendar', 'v3', credentials=creds)
 #     return gmail_service, calendar_service
 
-def get_user_services(uid):
+def auth_services(uid):
     doc_ref = db.collection("users").document(uid)
     doc = doc_ref.get()
     if not doc.exists:
