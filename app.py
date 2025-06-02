@@ -33,7 +33,7 @@ SCOPES = [
     "https://www.googleapis.com/auth/gmail.send",
     "https://www.googleapis.com/auth/gmail.readonly"
 ]
-CLIENT_SECRET_FILE = "credentials/credentials.json"
+CLIENT_SECRET_FILE = "/etc/secrets/credentials.json"
 background_agents = {}
 agent_flags = {}
 

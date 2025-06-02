@@ -29,7 +29,7 @@ def get_firestore():
 
 def auth_services(uid=None):
     creds = None
-    creds_path = 'credentials/credentials.json'
+    creds_path = '/etc/secrets/credentials.json'
 
     if uid:
         token_path = f'tokens/{uid}.json'
