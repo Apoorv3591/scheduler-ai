@@ -4,3 +4,5 @@ google-auth-oauthlib
 openai
 python-dotenv
 Flask
+flask-cors
+firebase-admin
