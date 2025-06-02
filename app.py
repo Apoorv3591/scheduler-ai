@@ -142,6 +142,7 @@ def toggle_agent():
     data = request.get_json()
     enable = data.get("enable", False)
     uid = g.firebase_uid
+    print(f"➡️ Toggle request for UID: {uid}, enable={enable}")
     doc_ref = db.collection("users").document(uid)
     doc_ref.set({"agentEnabled": enable}, merge=True)
 
@@ -155,6 +156,8 @@ def toggle_agent():
             print(f"🧵 Spawning thread for UID: {uid}")
             thread.start()
             print(f"✅ Started agent for UID: {uid}")
+        else:
+            print(f"⚠️ Agent already running for UID: {uid}")
     else:
         if uid in agent_flags:
             agent_flags[uid].set()
@@ -162,6 +165,7 @@ def toggle_agent():
             agent_flags.pop(uid, None)
             print(f"🛑 Stopped agent for UID: {uid}")
 
+    print(f"ℹ️ Toggle-agent processed for UID: {uid}, final background_agents={list(background_agents.keys())}")
     return jsonify({"uid": uid, "running": enable}), 200
 
 @app.route("/schedule", methods=["POST"])
