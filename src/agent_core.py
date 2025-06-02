@@ -50,6 +50,7 @@ def get_firestore():
 #     return gmail_service, calendar_service
 
 def auth_services(uid):
+    db = get_firestore()
     doc_ref = db.collection("users").document(uid)
     doc = doc_ref.get()
     if not doc.exists:
