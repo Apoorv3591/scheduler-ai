@@ -82,8 +82,7 @@ def auth_services(uid):
         scopes=scopes
     )
 
-    if creds.expired and creds.refresh_token:
-        creds.refresh(google.auth.transport.requests.Request())
+    
 
     gmail = build("gmail", "v1", credentials=creds)
     calendar = build("calendar", "v3", credentials=creds)
