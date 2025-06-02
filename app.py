@@ -41,18 +41,26 @@ agent_flags = {}
 
 def require_login(f):
     from functools import wraps
+
     @wraps(f)
     def wrapper(*args, **kwargs):
         auth_header = request.headers.get("Authorization", "")
+        print("🔐 Checking Authorization header...")
+
         if not auth_header.startswith("Bearer "):
+            print("❌ Missing or malformed Authorization header")
             return jsonify({"error": "Missing Authorization Header"}), 401
+
         token = auth_header.split("Bearer ")[1]
         try:
             decoded = firebase_auth.verify_id_token(token)
             g.firebase_uid = decoded["uid"]
+            print(f"✅ Firebase token verified for UID: {g.firebase_uid}")
             return f(*args, **kwargs)
         except Exception as e:
+            print(f"❌ Token verification failed: {e}")
             return jsonify({"error": f"Invalid token: {str(e)}"}), 401
+
     return wrapper
 
 def get_user_services(uid):
@@ -139,6 +147,8 @@ def agent_status():
 @app.route("/toggle-agent", methods=["POST"])
 @require_login
 def toggle_agent():
+    global background_agents, agent_flags
+    print("🛠️ /toggle-agent endpoint invoked")
     data = request.get_json()
     enable = data.get("enable", False)
     uid = g.firebase_uid

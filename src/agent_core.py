@@ -187,6 +187,7 @@ def user_agent_loop(uid, gmail, calendar):
     print(f"👋 Agent thread stopped for user {uid}")
 
 def run_agent_for_user(uid, stop_event):
+     print(f"🚀 run_agent_for_user() called for UID: {uid}")
     try:
         gmail, calendar = auth_services(uid)
         seen_ids = load_seen_ids(uid)
